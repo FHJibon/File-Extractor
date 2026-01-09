@@ -1,9 +1,40 @@
 import asyncio
 from openai import OpenAI
+try:
+    from openai import BadRequestError
+except Exception: 
+    BadRequestError = Exception
 import json
 import os
 
 from app.config import OPENAI_API_KEY, OPENAI_MODEL
+
+
+def _chat_completions_create_compat(
+    client: OpenAI,
+    *,
+    model: str,
+    messages: list,
+    max_output_tokens: int,
+    temperature: float = 0.0,
+):
+    try:
+        return client.chat.completions.create(
+            model=model,
+            messages=messages,
+            max_completion_tokens=max_output_tokens,
+            temperature=temperature,
+        )
+    except BadRequestError as exc:
+        message = str(getattr(exc, "message", "") or exc)
+        if "max_completion_tokens" in message or "Unsupported parameter" in message:
+            return client.chat.completions.create(
+                model=model,
+                messages=messages,
+                max_tokens=max_output_tokens,
+                temperature=temperature,
+            )
+        raise
 
 async def extract_text_from_file(file) -> str:
     filename = (getattr(file, "filename", None) or "upload").lower()
@@ -24,10 +55,11 @@ async def extract_text_from_file(file) -> str:
                 ]
             }
         ]
-        response = client.chat.completions.create(
+        response = _chat_completions_create_compat(
+            client,
             model=OPENAI_MODEL,
             messages=vision_prompt,
-            max_tokens=2048,
+            max_output_tokens=2048,
             temperature=0.0,
         )
         text = response.choices[0].message.content
@@ -76,10 +108,11 @@ async def extract_text_from_file(file) -> str:
     detected_lang = detect(text)
     if detected_lang != 'en':
         translation_prompt = f"Translate the following text to English. Return only the translated plain text.\n\n{text}"
-        response = client.chat.completions.create(
+        response = _chat_completions_create_compat(
+            client,
             model=OPENAI_MODEL,
             messages=[{"role": "user", "content": translation_prompt}],
-            max_tokens=2048,
+            max_output_tokens=2048,
             temperature=0.0,
         )
         text = response.choices[0].message.content
