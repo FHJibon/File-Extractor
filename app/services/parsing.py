@@ -2,16 +2,6 @@ import asyncio
 from openai import OpenAI
 import json
 import os
-from langdetect import detect
-from googletrans import Translator
-
-def detect_and_translate_to_english(text):
-    detected_lang = detect(text)
-    if detected_lang == 'en':
-        return text
-    translator = Translator()
-    translation = translator.translate(text, dest='en')
-    return translation.text
 
 from app.config import OPENAI_API_KEY, OPENAI_MODEL
 
@@ -57,7 +47,25 @@ async def extract_text_from_file(file) -> str:
 
         return response.output_text
 
-    return await asyncio.to_thread(_sync_extract)
+    text = await asyncio.to_thread(_sync_extract)
+    # Detect language
+    from langdetect import detect
+    detected_lang = detect(text)
+    if detected_lang != 'en':
+        # Use OpenAI to translate to English
+        if not OPENAI_API_KEY:
+            raise RuntimeError(
+                "OPENAI_API_KEY is not set. Set the OPENAI_API_KEY environment variable or configure it in app/config.py"
+            )
+        client = OpenAI(api_key=OPENAI_API_KEY)
+        translation_prompt = f"Translate the following text to English. Return only the translated plain text.\n\n{text}"
+        response = client.responses.create(
+            model=OPENAI_MODEL,
+            input=[{"role": "user", "content": translation_prompt}],
+            temperature=0.0,
+        )
+        return response.output_text
+    return text
 
 
 async def parse_with_openai(raw_text: str) -> dict:
