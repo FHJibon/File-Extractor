@@ -173,7 +173,6 @@ async def parse_with_openai(raw_text: str) -> dict:
                             "issueDate",
                             "dueDate",
                             "type",
-                            "currency",
                             "companyName",
                             "email",
                             "AddressAndContactInfo",
@@ -181,11 +180,9 @@ async def parse_with_openai(raw_text: str) -> dict:
                             "projectDescription",
                             "serviceAndItems",
                             "vat",
-                            "vatCurrency",
                             "subTotal",
-                            "subTotalCurrency",
-                            "totalAmount",
-                            "totalAmountCurrency",
+                            "totalAmount",                            
+                            "currency",
                             "isPaid",
                             "paidAt",
                             "additionalNote",
@@ -219,28 +216,20 @@ async def parse_with_openai(raw_text: str) -> dict:
                                             "name",
                                             "quantity",
                                             "unitPrice",
-                                            "unitPriceCurrency",
-                                            "total",
-                                            "totalCurrency",
+                                            "total"
                                         ],
                                         "properties": {
                                             "name": {"type": ["string", "null"]},
                                             "quantity": {"type": ["number", "null"]},
                                             "unitPrice": {"type": ["number", "null"]},
-                                            "unitPriceCurrency": {"type": ["string", "null"]},
                                             "total": {"type": ["number", "null"]}
-                                            ,
-                                            "totalCurrency": {"type": ["string", "null"]}
                                         }
                                     }
                                 },
 
                                 "vat": {"type": ["number", "null"]},
-                                "vatCurrency": {"type": ["string", "null"]},
                                 "subTotal": {"type": ["number", "null"]},
-                                "subTotalCurrency": {"type": ["string", "null"]},
                                 "totalAmount": {"type": ["number", "null"]},
-                                "totalAmountCurrency": {"type": ["string", "null"]},
 
                                 "isPaid": {"type": ["boolean", "null"]},
                                 "paidAt": {"type": ["string", "null"]},
