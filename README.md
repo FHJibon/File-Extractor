@@ -2,12 +2,14 @@
 
 ## ⚡ Quick Start
 
-1. Create a `.env` file with your OpenAI key:
+### 1. Setup Environment
+- Create a `.env` file in a root directory
 ```
 OPENAI_API_KEY=
 ```
 
-2. Build & run:
+### 2. Build & run:
+- Open Docker Desktop
 ```
 docker compose up --build
 ```
